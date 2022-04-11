@@ -142,6 +142,14 @@ def train(rank, a, h):
             optim_g.zero_grad()
 
             # L1 Mel-Spectrogram Loss
+            t1 = y_mel.size(2)
+            t2 = y_g_hat_mel.size(2)
+            
+            if t1 < t2:
+                y_g_hat_mel = y_g_hat_mel[:, :, :t1]
+            else:
+                y_mel = y_mel[:, :, : t2]
+            
             loss_mel = F.l1_loss(y_mel, y_g_hat_mel) * 45
 
             y_df_hat_r, y_df_hat_g, fmap_f_r, fmap_f_g = mpd(y, y_g_hat)
@@ -196,6 +204,13 @@ def train(rank, a, h):
                             y_g_hat_mel = mel_spectrogram(y_g_hat.squeeze(1), h.n_fft, h.num_mels, h.sampling_rate,
                                                           h.hop_size, h.win_size,
                                                           h.fmin, h.fmax_for_loss)
+                            t1 = y_mel.size(2)
+                            t2 = y_g_hat_mel.size(2)
+                            if t1 < t2:
+                                y_g_hat_mel = y_g_hat_mel[:, :, :t1]
+                            else:
+                                y_mel = y_mel[:, :, : t2]
+
                             val_err_tot += F.l1_loss(y_mel, y_g_hat_mel).item()
 
                             if j <= 4:
@@ -230,11 +245,11 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--group_name', default=None)
-    parser.add_argument('--input_wavs_dir', default='LJSpeech-1.1/wavs')
+    parser.add_argument('--input_wavs_dir', default='data/wavs')
     parser.add_argument('--input_mels_dir', default='ft_dataset')
-    parser.add_argument('--input_training_file', default='LJSpeech-1.1/training.txt')
-    parser.add_argument('--input_validation_file', default='LJSpeech-1.1/validation.txt')
-    parser.add_argument('--checkpoint_path', default='cp_hifigan')
+    parser.add_argument('--input_training_file', default='data/train.txt')
+    parser.add_argument('--input_validation_file', default='data/val.txt')
+    parser.add_argument('--checkpoint_path', default='ckpt_hifigan_v2')
     parser.add_argument('--config', default='')
     parser.add_argument('--training_epochs', default=3100, type=int)
     parser.add_argument('--stdout_interval', default=5, type=int)

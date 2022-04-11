@@ -78,7 +78,7 @@ def main():
     global device
     if torch.cuda.is_available():
         torch.cuda.manual_seed(h.seed)
-        device = torch.device('cuda')
+        device = torch.device('cuda:6')
     else:
         device = torch.device('cpu')
 
